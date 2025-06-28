@@ -145,9 +145,9 @@ def dhan_trading(dhan_pnl_file, date):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--kite", action="store_true")
-    parser.add_argument("--groww", action="store_true")
-    parser.add_argument("--dhan", action="store_true")
+    parser.add_argument("--kite", help="To read Kite P&L statement", action="store_true")
+    parser.add_argument("--groww", help="To read Groww P&L statement", action="store_true")
+    parser.add_argument("--dhan", help="To read Dhan P&L statement", action="store_true")
 
     args = parser.parse_args()
 
