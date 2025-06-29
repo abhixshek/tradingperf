@@ -113,7 +113,9 @@ def kite_trading(pnl_file, date):
 
 
 def groww_trading(groww_pnl_file, date):
-    no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct, avg_gain_pct, batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl = calc_groww_demat(groww_pnl_file)
+    (no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct, avg_gain_pct,
+     batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl) = calc_groww_demat(groww_pnl_file)
+    
     y = [(date, no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct, avg_gain_pct, batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl)]
     groww_rba_df = pd.DataFrame(y, columns=['upto_date', 'no_of_losing_trades', 'no_of_winning_trades', 'avg_loss', 'avg_gain', 'avg_loss_pct', 'avg_gain_pct',
                                             'batting_avg', 'win_loss_ratio', 'adj_win_loss_ratio', 'realized_pnl'])
@@ -130,6 +132,7 @@ def groww_trading(groww_pnl_file, date):
 def dhan_trading(dhan_pnl_file, date):
     (dhan_no_of_losing_trades, dhan_no_of_winning_trades, dhan_avg_loss, dhan_avg_gain, dhan_avg_loss_pct, dhan_avg_gain_pct,
     dhan_batting_avg, dhan_win_loss_ratio, dhan_adj_win_loss_ratio, dhan_realized_pnl) = calc_dhan_demat(dhan_pnl_file)
+
     y = [(date, dhan_no_of_losing_trades, dhan_no_of_winning_trades, dhan_avg_loss, dhan_avg_gain, dhan_avg_loss_pct, dhan_avg_gain_pct,
          dhan_batting_avg, dhan_win_loss_ratio, dhan_adj_win_loss_ratio, dhan_realized_pnl)]
     dhan_rba_df = pd.DataFrame(y, columns=['upto_date', 'no_of_losing_trades', 'no_of_winning_trades', 'avg_loss', 'avg_gain', 'avg_loss_pct', 'avg_gain_pct',
@@ -151,39 +154,37 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    a,b,c = time.localtime()[:3]
-    date = datetime.date(a,b,c)
+    year, month, t_date = time.localtime()[:3]
+    date = datetime.date(year, month, t_date)
 
     kite_pnl_file = ""
     if args.kite:
         rba_df = kite_trading(kite_pnl_file, date)
         rba_df.to_csv('risk_reward_2025.csv', index=False)
-
+        try:
+            os.remove(os.path.join(os.getcwd(), kite_pnl_file))
+            os.system("copy risk_reward_2025.csv rba_metrics.csv")
+        except Exception as e:
+            print(e)
 
     yesterday = date - datetime.timedelta(1)
+    yesterday_str = "-".join(yesterday.isoformat().split('-')[::-1]) # yesterday's date as a string in the format DD-MM-YYYY
     groww_client_code = ""
-    groww_pnl_file = f"Stocks_PnL_Report_{groww_client_code}_12-10-2024_{yesterday.isoformat().split('-')[-1]}-{yesterday.isoformat().split('-')[-2]}-{yesterday.isoformat().split('-')[0]}.xlsx"
+    groww_pnl_file = f"Stocks_PnL_Report_{groww_client_code}_12-10-2024_{yesterday_str}.xlsx"
     if args.groww:
         groww_rba_df = groww_trading(groww_pnl_file, date)
         groww_rba_df.to_csv('risk_reward_2025_groww.csv', index=False)
-
-
+             
+        try:
+            os.remove(os.path.join(os.getcwd(), groww_pnl_file))
+        except Exception as e:
+            print(e)
+  
     dhan_pnl_file = 'PNL_REPORT.xls'
     if args.dhan:
         dhan_rba_df = dhan_trading(dhan_pnl_file, date)
         dhan_rba_df.to_csv('risk_reward_2025_dhan.csv', index=False)
-
-
-    try:
-        os.remove(os.path.join(os.getcwd(), kite_pnl_file))
-        os.system("copy risk_reward_2025.csv rba_metrics.csv")
-    except Exception as e:
-        print(e)
-    try:
-        os.remove(os.path.join(os.getcwd(), groww_pnl_file))
-    except Exception as e:
-        print(e)
-    try:
-       os.remove(os.path.join(os.getcwd(), dhan_pnl_file))
-    except Exception as e:
-       print(e)
+        try:
+            os.remove(os.path.join(os.getcwd(), dhan_pnl_file))
+        except Exception as e:
+            print(e)
