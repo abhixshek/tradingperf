@@ -1,28 +1,33 @@
 import os
 import sys
+import numpy as np
 import pandas as pd
 import datetime
 import time
 import argparse
+import configparser
 import warnings
 warnings.filterwarnings("ignore")
 
 
-def calc(pnl_file):
+def calc_kite(pnl_file):
     try:
         metrics_df = pd.read_excel(pnl_file, skiprows=36, header=1, usecols='B:N')
     except:
         print('file not found.')
         sys.exit()
 
-    no_of_losing_trades = len(metrics_df[metrics_df['Realized P&L'] <= 0]['Realized P&L'])
-    no_of_winning_trades = len(metrics_df[metrics_df['Realized P&L'] > 0]['Realized P&L'])
+    loss_condition = metrics_df['Realized P&L'] <= 0
+    win_condition = np.logical_not(loss_condition)
+    
+    no_of_losing_trades = loss_condition.sum()
+    no_of_winning_trades = win_condition.sum()
 
-    avg_loss = metrics_df[metrics_df['Realized P&L'] <= 0]['Realized P&L'].mean()
-    avg_gain = metrics_df[metrics_df['Realized P&L'] > 0]['Realized P&L'].mean()
+    avg_loss = metrics_df.loc[loss_condition, 'Realized P&L'].mean()
+    avg_gain = metrics_df.loc[win_condition, 'Realized P&L'].mean()
 
-    avg_loss_pct = metrics_df[metrics_df['Realized P&L Pct.'] <= 0]['Realized P&L Pct.'].mean()
-    avg_gain_pct = metrics_df[metrics_df['Realized P&L Pct.'] > 0]['Realized P&L Pct.'].mean()
+    avg_loss_pct = metrics_df.loc[loss_condition, 'Realized P&L Pct.'].mean()
+    avg_gain_pct = metrics_df.loc[win_condition, 'Realized P&L Pct.'].mean()
 
     batting_avg = no_of_winning_trades * 100 / (no_of_winning_trades + no_of_losing_trades)
     win_loss_ratio = -1 * avg_gain_pct / avg_loss_pct
@@ -35,7 +40,7 @@ def calc(pnl_file):
     return (no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct, avg_gain_pct, batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl)
 
 
-def calc_groww_demat(groww_pnl_file):
+def calc_groww(groww_pnl_file):
     try:
         groww_metrics_df = pd.read_excel(groww_pnl_file, skiprows=24)
     except:
@@ -64,7 +69,7 @@ def calc_groww_demat(groww_pnl_file):
     return (no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct, avg_gain_pct, batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl)
 
 
-def calc_dhan_demat(dhan_pnl_file='PNL_REPORT.xls'):
+def calc_dhan(dhan_pnl_file='PNL_REPORT.xls'):
     try:
         dhan_df = pd.read_excel('PNL_REPORT.xls', skiprows=13)
     except:
@@ -94,17 +99,18 @@ def calc_dhan_demat(dhan_pnl_file='PNL_REPORT.xls'):
     return (no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct, avg_gain_pct, batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl)
 
 
-def kite_trading(pnl_file, date):
+def kite_trading(pnl_file, date, broker, calc_function):
 
-    no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct, avg_gain_pct, batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl = calc(pnl_file)
-
+    (no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct,
+     avg_gain_pct, batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl) = calc_function(pnl_file)
     
-    y = [(date, no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct, avg_gain_pct, batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl)]
+    y = [(date, no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct, avg_gain_pct,
+          batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl)]
     rba_df =pd.DataFrame(y, columns=['upto_date', 'no_of_losing_trades', 'no_of_winning_trades', 'avg_loss', 'avg_gain', 'avg_loss_pct', 'avg_gain_pct',
                                      'batting_avg', 'win_loss_ratio', 'adj_win_loss_ratio', 'realized_pnl'])
 
     try:
-        data = pd.read_csv('risk_reward_2025.csv')
+        data = pd.read_csv(f'trade_metrics_{broker}.csv')
         rba_df = pd.concat([data, rba_df], ignore_index=True)
     except:
         pass
@@ -112,79 +118,51 @@ def kite_trading(pnl_file, date):
     return rba_df
 
 
-def groww_trading(groww_pnl_file, date):
-    (no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct, avg_gain_pct,
-     batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl) = calc_groww_demat(groww_pnl_file)
-    
-    y = [(date, no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct, avg_gain_pct, batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl)]
-    groww_rba_df = pd.DataFrame(y, columns=['upto_date', 'no_of_losing_trades', 'no_of_winning_trades', 'avg_loss', 'avg_gain', 'avg_loss_pct', 'avg_gain_pct',
-                                            'batting_avg', 'win_loss_ratio', 'adj_win_loss_ratio', 'realized_pnl'])
-
-    try:
-        data = pd.read_csv('risk_reward_2025_groww.csv')
-        groww_rba_df = pd.concat([data, groww_rba_df], ignore_index=True)
-    except:
-        pass
-
-    return groww_rba_df
-
-
-def dhan_trading(dhan_pnl_file, date):
-    (dhan_no_of_losing_trades, dhan_no_of_winning_trades, dhan_avg_loss, dhan_avg_gain, dhan_avg_loss_pct, dhan_avg_gain_pct,
-    dhan_batting_avg, dhan_win_loss_ratio, dhan_adj_win_loss_ratio, dhan_realized_pnl) = calc_dhan_demat(dhan_pnl_file)
-
-    y = [(date, dhan_no_of_losing_trades, dhan_no_of_winning_trades, dhan_avg_loss, dhan_avg_gain, dhan_avg_loss_pct, dhan_avg_gain_pct,
-         dhan_batting_avg, dhan_win_loss_ratio, dhan_adj_win_loss_ratio, dhan_realized_pnl)]
-    dhan_rba_df = pd.DataFrame(y, columns=['upto_date', 'no_of_losing_trades', 'no_of_winning_trades', 'avg_loss', 'avg_gain', 'avg_loss_pct', 'avg_gain_pct',
-                                         'batting_avg', 'win_loss_ratio', 'adj_win_loss_ratio', 'realized_pnl'])
-    try:
-       data = pd.read_csv('risk_reward_2025_dhan.csv')
-       dhan_rba_df = pd.concat([data, dhan_rba_df], ignore_index=True)
-    except:
-       pass
-
-    return dhan_rba_df
-
-
 if __name__ == "__main__":
+    # parse command-line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("--kite", help="To read Kite P&L statement", action="store_true")
-    parser.add_argument("--groww", help="To read Groww P&L statement", action="store_true")
-    parser.add_argument("--dhan", help="To read Dhan P&L statement", action="store_true")
+    parser.add_argument("--kite", help="Reads Kite P&L statement", action="store_true")
+    parser.add_argument("--groww", help="Reads Groww P&L statement", action="store_true")
+    parser.add_argument("--dhan", help="Reads Dhan P&L statement", action="store_true")
 
     args = parser.parse_args()
+    all_brokers = args._get_kwargs()
+    brokers_passed = list(filter(lambda x: x[1], all_brokers))
+
+    # parse configuration from user
+    config = configparser.ConfigParser()
+    config.read('client_id.ini')
 
     year, month, t_date = time.localtime()[:3]
     date = datetime.date(year, month, t_date)
 
-    kite_pnl_file = ""
-    if args.kite:
-        rba_df = kite_trading(kite_pnl_file, date)
-        rba_df.to_csv('risk_reward_2025.csv', index=False)
-        try:
-            os.remove(os.path.join(os.getcwd(), kite_pnl_file))
-            os.system("copy risk_reward_2025.csv rba_metrics.csv")
-        except Exception as e:
-            print(e)
+    kite_pnl_file = 'pnl-{0}.xlsx'.format(config['client.id']['kiteclientid'])
 
     yesterday = date - datetime.timedelta(1)
     yesterday_str = "-".join(yesterday.isoformat().split('-')[::-1]) # yesterday's date as a string in the format DD-MM-YYYY
-    groww_client_code = ""
+    groww_client_code = config['client.id']['growwclientcode']
     groww_pnl_file = f"Stocks_PnL_Report_{groww_client_code}_12-10-2024_{yesterday_str}.xlsx"
-    if args.groww:
-        groww_rba_df = groww_trading(groww_pnl_file, date)
-        groww_rba_df.to_csv('risk_reward_2025_groww.csv', index=False)
-             
-        try:
-            os.remove(os.path.join(os.getcwd(), groww_pnl_file))
-        except Exception as e:
-            print(e)
-  
+
     dhan_pnl_file = 'PNL_REPORT.xls'
-    if args.dhan:
-        dhan_rba_df = dhan_trading(dhan_pnl_file, date)
-        dhan_rba_df.to_csv('risk_reward_2025_dhan.csv', index=False)
+    input_pnl_files = {
+        'kite': kite_pnl_file,
+        'groww': groww_pnl_file,
+        'dhan': dhan_pnl_file
+    }
+
+    calc_functions = {
+        'kite': calc_kite,
+        'groww': calc_groww,
+        'dhan': calc_dhan
+    }
+
+    for broker in brokers_passed:
+        pnl_file = input_pnl_files[broker[0]]
+        calc_function = calc_functions[broker[0]]
+        rba_df = kite_trading(pnl_file, date, broker[0], calc_function)
+        rba_df.to_csv(f'trade_metrics_{broker[0]}.csv', index=False)
         try:
-            os.remove(os.path.join(os.getcwd(), dhan_pnl_file))
+            os.remove(os.path.join(os.getcwd(), pnl_file))
+            # os.system("copy risk_reward_2025.csv rba_metrics.csv")
         except Exception as e:
             print(e)
