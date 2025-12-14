@@ -51,15 +51,18 @@ def calc_groww(groww_pnl_file):
 
     groww_metrics_df = groww_metrics_df.iloc[:groww_metrics_df.index[groww_metrics_df['Stock name'].isnull()][0], :]
     groww_metrics_df['Realised P&L%'] = 100 * groww_metrics_df.loc[:, 'Realised P&L'] / groww_metrics_df.loc[:, 'Buy value']
+
+    loss_condition = groww_metrics_df['Realised P&L'] <= 0
+    win_condition = np.logical_not(loss_condition)
+
+    no_of_losing_trades = loss_condition.sum()
+    no_of_winning_trades = win_condition.sum()
     
-    no_of_losing_trades = len(groww_metrics_df[groww_metrics_df['Realised P&L'] <= 0]['Realised P&L'])
-    no_of_winning_trades = len(groww_metrics_df[groww_metrics_df['Realised P&L'] > 0]['Realised P&L'])
+    avg_loss = groww_metrics_df.loc[loss_condition, 'Realised P&L'].mean()
+    avg_gain = groww_metrics_df.loc[win_condition, 'Realised P&L'].mean()
     
-    avg_loss = groww_metrics_df[groww_metrics_df['Realised P&L'] <= 0]['Realised P&L'].mean()
-    avg_gain = groww_metrics_df[groww_metrics_df['Realised P&L'] > 0]['Realised P&L'].mean()
-    
-    avg_loss_pct = groww_metrics_df[groww_metrics_df['Realised P&L%'] <= 0]['Realised P&L%'].mean()
-    avg_gain_pct = groww_metrics_df[groww_metrics_df['Realised P&L%'] > 0]['Realised P&L%'].mean()
+    avg_loss_pct = groww_metrics_df.loc[loss_condition, 'Realised P&L%'].mean()
+    avg_gain_pct = groww_metrics_df.loc[win_condition, 'Realised P&L%'].mean()
     
     batting_avg = no_of_winning_trades * 100 / (no_of_winning_trades + no_of_losing_trades)
     win_loss_ratio = -1 * avg_gain_pct / avg_loss_pct
