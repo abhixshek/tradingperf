@@ -120,8 +120,9 @@ def create_historical_df(pnl_file, date, broker, calc_function):
     
     y = [(date, no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct, avg_gain_pct,
           batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl)]
-    rba_df = pd.DataFrame(y, columns=['upto_date', 'no_of_losing_trades', 'no_of_winning_trades', 'avg_loss', 'avg_gain', 'avg_loss_pct', 'avg_gain_pct',
-                                     'batting_avg', 'win_loss_ratio', 'adj_win_loss_ratio', 'realized_pnl'])
+    rba_df = pd.DataFrame(y, columns=['upto_date', 'no_of_losing_trades', 'no_of_winning_trades',
+                                      'avg_loss', 'avg_gain', 'avg_loss_pct', 'avg_gain_pct',
+                                      'batting_avg', 'win_loss_ratio', 'adj_win_loss_ratio', 'realized_pnl'])
 
     try:
         data = pd.read_csv(Path('output') / f'trade_metrics_{broker}.csv')
@@ -158,7 +159,8 @@ if __name__ == "__main__":
     yesterday = date - datetime.timedelta(1)
     yesterday_str = "-".join(yesterday.isoformat().split('-')[::-1]) # yesterday's date as a string in the format DD-MM-YYYY
     groww_client_code = config['client.id']['growwclientcode']
-    groww_pnl_file = f"Stocks_PnL_Report_{groww_client_code}_12-10-2024_{yesterday_str}.xlsx" # TODO 12-10-2024 is a hard-coded date. it wont apply to other users of your code
+    groww_pnl_file = f"Stocks_PnL_Report_{groww_client_code}_12-10-2024_{yesterday_str}.xlsx"
+    # TODO 12-10-2024 is a hard-coded date. it wont apply to other users of your code
 
     dhan_pnl_file = 'PNL_REPORT.xls'
     input_pnl_files = {

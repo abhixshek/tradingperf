@@ -19,3 +19,8 @@ optional arguments:
   --dhan      To read Dhan P&L statement
 
 ````
+
+To view the results and graph, run:
+````bash
+$ python view.py (--kite | --groww | --dhan)
+````
