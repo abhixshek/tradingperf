@@ -3,7 +3,7 @@ Track your trading performance metrics.
 Broker platforms supported include Kite, Groww and Dhan.
 
 Steps to run the script:
-1. Download your P&L statements from any of the above broker platforms
+1. Download your P&L statements from any of the above broker platforms and save them into ./input/ directory.
 2. In your terminal, run: `python historical_trade_metrics.py [--kite] [--groww] [--dhan]`
 
 To get more information, run: 

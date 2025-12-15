@@ -11,6 +11,14 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
+def calculate_ratios(no_of_losing_trades, no_of_winning_trades, avg_loss_pct, avg_gain_pct):
+    batting_avg = no_of_winning_trades * 100 / (no_of_winning_trades + no_of_losing_trades)
+    win_loss_ratio = -1 * avg_gain_pct / avg_loss_pct
+    adj_win_loss_ratio = (-1 * batting_avg * avg_gain_pct) / ((100 - batting_avg) * avg_loss_pct)
+
+    return batting_avg, win_loss_ratio, adj_win_loss_ratio
+
+
 def calc_kite(pnl_file):
     try:
         metrics_df = pd.read_excel(Path('input') / pnl_file, skiprows=36, header=1, usecols='B:N')
@@ -30,9 +38,8 @@ def calc_kite(pnl_file):
     avg_loss_pct = metrics_df.loc[loss_condition, 'Realized P&L Pct.'].mean()
     avg_gain_pct = metrics_df.loc[win_condition, 'Realized P&L Pct.'].mean()
 
-    batting_avg = no_of_winning_trades * 100 / (no_of_winning_trades + no_of_losing_trades)
-    win_loss_ratio = -1 * avg_gain_pct / avg_loss_pct
-    adj_win_loss_ratio = (-1 * batting_avg * avg_gain_pct) / ((100-batting_avg) * avg_loss_pct)
+    batting_avg, win_loss_ratio, adj_win_loss_ratio = calculate_ratios(no_of_losing_trades, no_of_winning_trades,
+                                                                       avg_loss_pct, avg_gain_pct)
 
     realized_pnl = pd.read_excel(Path('input') / pnl_file, skiprows=13, nrows=3, usecols='B:C').iloc[:,1]
     realized_pnl[0] = -1 * realized_pnl[0]
@@ -63,10 +70,9 @@ def calc_groww(groww_pnl_file):
     
     avg_loss_pct = groww_metrics_df.loc[loss_condition, 'Realised P&L%'].mean()
     avg_gain_pct = groww_metrics_df.loc[win_condition, 'Realised P&L%'].mean()
-    
-    batting_avg = no_of_winning_trades * 100 / (no_of_winning_trades + no_of_losing_trades)
-    win_loss_ratio = -1 * avg_gain_pct / avg_loss_pct
-    adj_win_loss_ratio = (-1 * batting_avg * avg_gain_pct) / ((100-batting_avg) * avg_loss_pct)
+
+    batting_avg, win_loss_ratio, adj_win_loss_ratio = calculate_ratios(no_of_losing_trades, no_of_winning_trades,
+                                                                       avg_loss_pct, avg_gain_pct)
     
     groww_pnl = pd.read_excel(Path('input') / groww_pnl_file, usecols="A:B", index_col=0, nrows=20)
     realized_pnl = -groww_pnl.iloc[11:11+8,0].sum() + groww_metrics_df['Realised P&L'].sum()
@@ -86,18 +92,20 @@ def calc_dhan(dhan_pnl_file='PNL_REPORT.xls'):
     dhan_df = dhan_df.dropna(subset=['Sr.'])
     dhan_df['Realised P&L%'] = 100 * dhan_df.loc[:, 'Realised P&L'] / dhan_df.loc[:, 'Buy Value']
 
-    no_of_losing_trades = len(dhan_df[dhan_df['Realised P&L'] <= 0]['Realised P&L'])
-    no_of_winning_trades = len(dhan_df[dhan_df['Realised P&L'] > 0]['Realised P&L'])
+    loss_condition = dhan_df['Realised P&L'] <= 0
+    win_condition = np.logical_not(loss_condition)
 
-    avg_loss = dhan_df[dhan_df['Realised P&L'] <= 0]['Realised P&L'].mean()
-    avg_gain = dhan_df[dhan_df['Realised P&L'] > 0]['Realised P&L'].mean()
+    no_of_losing_trades = loss_condition.sum()
+    no_of_winning_trades = win_condition.sum()
 
-    avg_loss_pct = dhan_df[dhan_df['Realised P&L%'] <= 0]['Realised P&L%'].mean()
-    avg_gain_pct = dhan_df[dhan_df['Realised P&L%'] > 0]['Realised P&L%'].mean()
+    avg_loss = dhan_df.loc[loss_condition, 'Realised P&L'].mean()
+    avg_gain = dhan_df.loc[win_condition, 'Realised P&L'].mean()
 
-    batting_avg = no_of_winning_trades * 100 / (no_of_winning_trades + no_of_losing_trades)
-    win_loss_ratio = -1 * avg_gain_pct / avg_loss_pct
-    adj_win_loss_ratio = (-1 * batting_avg * avg_gain_pct) / ((100-batting_avg) * avg_loss_pct)
+    avg_loss_pct = dhan_df.loc[loss_condition, 'Realised P&L%'].mean()
+    avg_gain_pct = dhan_df.loc[win_condition, 'Realised P&L%'].mean()
+
+    batting_avg, win_loss_ratio, adj_win_loss_ratio = calculate_ratios(no_of_losing_trades, no_of_winning_trades,
+                                                                       avg_loss_pct, avg_gain_pct)
 
     dhan_pnl_df = pd.read_excel(Path('input') / 'PNL_REPORT.xls', skiprows=6, nrows=1)
     realized_pnl = -dhan_pnl_df.loc[0, 'Total Charges'] + sum(dhan_df['Realised P&L'])
@@ -107,7 +115,6 @@ def calc_dhan(dhan_pnl_file='PNL_REPORT.xls'):
 
 
 def create_historical_df(pnl_file, date, broker, calc_function):
-
     (no_of_losing_trades, no_of_winning_trades, avg_loss, avg_gain, avg_loss_pct,
      avg_gain_pct, batting_avg, win_loss_ratio, adj_win_loss_ratio, realized_pnl) = calc_function(pnl_file)
     
@@ -118,9 +125,12 @@ def create_historical_df(pnl_file, date, broker, calc_function):
 
     try:
         data = pd.read_csv(Path('output') / f'trade_metrics_{broker}.csv')
-        rba_df = pd.concat([data, rba_df], ignore_index=True)
-    except:
-        pass
+    except FileNotFoundError:
+        print(f"No historical trade metrics data found for {broker} account.")
+        print("New trade metrics file will be generated.")
+        return rba_df
+
+    rba_df = pd.concat([data, rba_df], ignore_index=True)
 
     return rba_df
 
@@ -164,6 +174,7 @@ if __name__ == "__main__":
     }
 
     for broker in broker_args_passed:
+        print(f"Running through {broker[0]} data")
         pnl_file = input_pnl_files[broker[0]]
         calc_function = calc_functions[broker[0]]
         rba_df = create_historical_df(pnl_file, date, broker[0], calc_function)
@@ -174,4 +185,5 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
 
+    print("\nData processing complete.")
     print("Application closing...")
