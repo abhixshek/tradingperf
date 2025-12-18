@@ -139,9 +139,9 @@ def create_historical_df(pnl_file, date, broker, calc_function):
 if __name__ == "__main__":
     # parse command-line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("--kite", help="Reads Kite P&L statement", action="store_true")
-    parser.add_argument("--groww", help="Reads Groww P&L statement", action="store_true")
-    parser.add_argument("--dhan", help="Reads Dhan P&L statement", action="store_true")
+    parser.add_argument("--kite", help="read Kite P&L statement", action="store_true")
+    parser.add_argument("--groww", help="read Groww P&L statement", action="store_true")
+    parser.add_argument("--dhan", help="read Dhan P&L statement", action="store_true")
 
     args = parser.parse_args()
     all_brokers = args._get_kwargs()
