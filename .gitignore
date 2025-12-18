@@ -7,4 +7,5 @@
 *.xls
 *.ini
 client_id.ini
-
+*.png
+*.jpeg

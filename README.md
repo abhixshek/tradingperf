@@ -14,13 +14,26 @@ usage: historical_trade_metrics.py [-h] [--kite] [--groww] [--dhan]
 
 optional arguments:
   -h, --help  show this help message and exit
-  --kite      To read Kite P&L statement
-  --groww     To read Groww P&L statement
-  --dhan      To read Dhan P&L statement
+  --kite      read Kite P&L statement
+  --groww     read Groww P&L statement
+  --dhan      read Dhan P&L statement
 
 ````
 
 To view the results and graph, run:
 ````bash
-$ python view.py (--kite | --groww | --dhan)
+$ python view.py (--kite | --groww | --dhan | --all)
+````
+
+To get more information, run:
+````bash
+$ python view.py -h
+usage: view.py [-h] (--kite | --groww | --dhan | --all)
+
+options:
+  -h, --help            show this help message and exit
+  --kite                read Kite trade_metrics file
+  --groww               read Groww trade_metrics file
+  --dhan                read Dhan trade_metrics file
+  --all                 read all trade_metrics files to compute net P&L value across all account
 ````
