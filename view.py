@@ -18,11 +18,12 @@ def plot_metric(data, metric='realized_pnl'):
     plt.xticks(data['upto_date'][::spacing], rotation=45)
     plt.grid(True)
     plt.tight_layout()
-    plt.show()
-
-    # today = datetime.now()
-    # filename = '{}_{}_{}'.format(today.year, today.month, today.day)
-    # plt.savefig(f'{filename}.png')
+    if not args.save:
+        plt.show()
+    else:
+        today = datetime.now()
+        filename = '{}_{}_{}'.format(today.year, today.month, today.day)
+        plt.savefig(f'{filename}.png')
 
     # webbrowser.open('https://console.zerodha.com/verified/') #TODO make it configurable, passed by user
 
@@ -37,7 +38,7 @@ def display(data):
     win_loss_ratio = data.loc[len(data) - 1, "win_loss_ratio"]
     batting_avg = data.loc[len(data) - 1, "batting_avg"]
     if win_loss_ratio < 3.0:
-        idx_last_row = len(data) - (data.to_string()[::-1].find('\n') + 1)
+        idx_last_row = len(data.to_string()) - (data.to_string()[::-1].find('\n') + 1)
         print(data.to_string()[:idx_last_row + 1] + Fore.RED + data.to_string()[idx_last_row + 1:] + Style.RESET_ALL)
     else:
         print(data.to_string())
@@ -71,6 +72,7 @@ def display_net_pnl():
     final_df['net'] = net_pnl
 
     plot_metric(final_df, 'net')
+    print(final_df.to_string())
 
 
 if __name__ == "__main__":
@@ -81,6 +83,8 @@ if __name__ == "__main__":
     group.add_argument("--groww", help="read Groww trade_metrics file", action="store_true")
     group.add_argument("--dhan", help="read Dhan trade_metrics file", action="store_true")
     group.add_argument("--all", help="read all trade_metrics files to compute net P&L value across all accounts", action="store_true")
+
+    parser.add_argument("--save", help="save generated plot image", action="store_true")
 
     args = parser.parse_args()
 
