@@ -13,10 +13,10 @@ $ python historical_trade_metrics.py -h
 usage: historical_trade_metrics.py [-h] [--kite] [--groww] [--dhan]
 
 optional arguments:
-  -h, --help  show this help message and exit
-  --kite      read Kite P&L statement
-  --groww     read Groww P&L statement
-  --dhan      read Dhan P&L statement
+  -h, --help      show this help message and exit
+  --kite          read Kite P&L statement
+  --groww         read Groww P&L statement
+  --dhan          read Dhan P&L statement
 
 ````
 
@@ -31,9 +31,9 @@ $ python view.py -h
 usage: view.py [-h] (--kite | --groww | --dhan | --all)
 
 options:
-  -h, --help            show this help message and exit
-  --kite                read Kite trade_metrics file
-  --groww               read Groww trade_metrics file
-  --dhan                read Dhan trade_metrics file
-  --all                 read all trade_metrics files to compute net P&L value across all account
+  -h, --help      show this help message and exit
+  --kite          read Kite trade_metrics file
+  --groww         read Groww trade_metrics file
+  --dhan          read Dhan trade_metrics file
+  --all           read all trade_metrics files to compute net P&L value across all accounts
 ````
