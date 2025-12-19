@@ -22,7 +22,7 @@ optional arguments:
 
 To view the results and graph, run:
 ````bash
-$ python view.py (--kite | --groww | --dhan | --all)
+$ python view.py (--kite | --groww | --dhan | --all) [--save]
 ````
 
 To get more information, run:
@@ -38,4 +38,3 @@ options:
   --all           read all trade_metrics files to compute net P&L value across all accounts
   --save          save generated plot image
 ````
-

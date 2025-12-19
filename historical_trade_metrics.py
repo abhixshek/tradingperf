@@ -19,7 +19,7 @@ def calculate_ratios(no_of_losing_trades, no_of_winning_trades, avg_loss_pct, av
     return batting_avg, win_loss_ratio, adj_win_loss_ratio
 
 
-def calc_kite(pnl_file):
+def calc_kite(pnl_file): # TODO maintain single calc function for all brokers with function signature as calculate_metrics(pnl_file, broker)
     try:
         metrics_df = pd.read_excel(Path('input') / pnl_file, skiprows=36, header=1, usecols='B:N')
     except:

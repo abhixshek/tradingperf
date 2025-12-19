@@ -18,12 +18,12 @@ def plot_metric(data, metric='realized_pnl'):
     plt.xticks(data['upto_date'][::spacing], rotation=45)
     plt.grid(True)
     plt.tight_layout()
-    if not args.save:
-        plt.show()
-    else:
+    if args.save:
         today = datetime.now()
         filename = '{}_{}_{}'.format(today.year, today.month, today.day)
         plt.savefig(f'{filename}.png')
+
+    plt.show()
 
     # webbrowser.open('https://console.zerodha.com/verified/') #TODO make it configurable, passed by user
 
