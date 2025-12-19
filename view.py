@@ -13,7 +13,10 @@ warnings.filterwarnings("ignore")
 
 def plot_metric(data, metric='realized_pnl'):
     plt.figure(facecolor=(0.8, 0.8, 0.8), figsize=(12, 12))
-    plt.plot(data['upto_date'], data[metric], "b")
+    if metric == 'realized_pnl' or metric == 'net':
+        plt.plot(data['upto_date'], data[metric], "b")
+    else:
+        plt.plot(data['upto_date'], data[metric], "b", marker="o", markersize=2, linewidth=1)
     spacing = 20 if len(data) > 100 else 10
     plt.xticks(data['upto_date'][::spacing], rotation=45)
     plt.grid(True)
@@ -28,7 +31,7 @@ def plot_metric(data, metric='realized_pnl'):
     # webbrowser.open('https://console.zerodha.com/verified/') #TODO make it configurable, passed by user
 
 
-def display(data):
+def display(data, to_plot=True, metric="realized_pnl"):
     # data['return'] = data.loc[:,'realized_pnl'] / e * 100
     # data = data[['upto_date','no_of_losing_trades','no_of_winning_trades','avg_loss','avg_gain',
     # 'avg_loss_pct','avg_gain_pct','batting_avg','win_loss_ratio','adj_win_loss_ratio']]
@@ -49,7 +52,8 @@ def display(data):
         + Fore.YELLOW + f"{-avg_loss * 100 / 5:.2f}" + Style.RESET_ALL
     )
 
-    plot_metric(data)
+    if to_plot:
+        plot_metric(data, metric=metric)
 
 
 def display_net_pnl():
@@ -86,6 +90,11 @@ if __name__ == "__main__":
 
     parser.add_argument("--save", help="save generated plot image", action="store_true")
 
+    parser.add_argument("--metric", default="realized_pnl",
+                        help="pass metric to be plotted",
+                        choices=["realized_pnl", "adj_win_loss_ratio", "win_loss_ratio", "batting_avg",
+                                  "avg_gain_pct", "avg_loss_pct"])
+
     args = parser.parse_args()
 
     if args.kite:
@@ -99,6 +108,8 @@ if __name__ == "__main__":
 
     if not args.all:
         data = pd.read_csv(Path('.') / 'output' / metrics_file)
-        display(data)
+        display(data, metric=args.metric)
     elif args.all:
+        if args.metric != "realized_pnl":
+            raise ValueError(f"{args.metric} is not supported with --all flag.\n--all flag only supports plotting \"net\" realized_pnl")
         display_net_pnl()

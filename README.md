@@ -22,7 +22,7 @@ optional arguments:
 
 To view the results and graph, run:
 ````bash
-$ python view.py (--kite | --groww | --dhan | --all) [--save]
+$ python view.py (--kite | --groww | --dhan | --all) [--save] [--metric {realized_pnl,adj_win_loss_ratio,win_loss_ratio,batting_avg,avg_gain_pct,avg_loss_pct}]
 ````
 
 To get more information, run:
@@ -37,4 +37,5 @@ options:
   --dhan          read Dhan trade_metrics file
   --all           read all trade_metrics files to compute net P&L value across all accounts
   --save          save generated plot image
+  --metric {realized_pnl,adj_win_loss_ratio,win_loss_ratio,batting_avg,avg_gain_pct,avg_loss_pct} pass metric to be plotted
 ````
