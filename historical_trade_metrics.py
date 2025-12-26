@@ -54,7 +54,7 @@ def calc_groww(groww_pnl_file):
         groww_metrics_df = pd.read_excel(Path('input') / groww_pnl_file, skiprows=24)
     except:
         print(f'{groww_pnl_file} not found.')
-        sys.exit() 
+        sys.exit()
 
     groww_metrics_df = groww_metrics_df.iloc[:groww_metrics_df.index[groww_metrics_df['Stock name'].isnull()][0], :]
     groww_metrics_df['Realised P&L%'] = 100 * groww_metrics_df.loc[:, 'Realised P&L'] / groww_metrics_df.loc[:, 'Buy value']
@@ -159,8 +159,8 @@ if __name__ == "__main__":
     yesterday = date - datetime.timedelta(1)
     yesterday_str = "-".join(yesterday.isoformat().split('-')[::-1]) # yesterday's date as a string in the format DD-MM-YYYY
     groww_client_code = config['client.id']['growwclientcode']
-    groww_pnl_file = f"Stocks_PnL_Report_{groww_client_code}_12-10-2024_{yesterday_str}.xlsx"
-    # TODO 12-10-2024 is a hard-coded date. it wont apply to other users of your code
+    groww_valid_input_files = list(Path('input').glob(f'Stocks_PnL_Report_{groww_client_code}_*{yesterday_str}.xlsx'))
+    groww_pnl_file = groww_valid_input_files[0].name if groww_valid_input_files else ''
 
     dhan_pnl_file = 'PNL_REPORT.xls'
     input_pnl_files = {

@@ -2,6 +2,8 @@ Track your trading performance metrics.
 
 Broker platforms supported include Kite, Groww and Dhan.
 
+Run `historical_trade_metrics.py` daily, weekly or at any arbitrary frequency to build a historical database of your metrics over time.
+
 Steps to run the script:
 1. Download your P&L statements from any of the above broker platforms and save them into `./input/` directory.
 2. Update `client_id.ini` file with your account's Client ID (not required for Dhan)
