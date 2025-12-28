@@ -4,10 +4,17 @@ Broker platforms supported include Kite, Groww and Dhan.
 
 Run `historical_trade_metrics.py` daily, weekly or at any arbitrary frequency to build a historical database of your metrics over time.
 
+### Usage:
+
+Initializing the project with dependencies:
+1. `python -m venv .venv`
+2. `source .venv/Scripts/activate`
+3. `python -m pip install -r requirements.txt`
+
 Steps to run the script:
 1. Download your P&L statements from any of the above broker platforms and save them into `./input/` directory.
 2. Update `client_id.ini` file with your account's Client ID (not required for Dhan)
-3. In your terminal, run: `python historical_trade_metrics.py [--kite] [--groww] [--dhan]`
+3. In your terminal from the project directory, run: `python historical_trade_metrics.py [--kite] [--groww] [--dhan]`
 
 To get more information, run: 
 ````bash
