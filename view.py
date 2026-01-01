@@ -1,3 +1,5 @@
+#!.venv/Scripts/python
+
 import sys
 import webbrowser
 from colorama import Back, Fore, Style
@@ -28,7 +30,7 @@ def plot_metric(data, metric='realized_pnl'):
 
     plt.show()
 
-    # webbrowser.open('https://console.zerodha.com/verified/') #TODO make it configurable, passed by user
+    # webbrowser.open('https://console.zerodha.com/verified/') #TODO make it configurable, passed by user. But this line does not belong here in plot_metric function. this should be outside this function.
 
 
 def display(data, to_plot=True, metric="realized_pnl"):
